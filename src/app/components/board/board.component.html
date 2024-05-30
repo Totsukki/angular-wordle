@@ -1,8 +1,5 @@
 <div class="board">
-    <div #tryArea id={{try}} class="try" *ngFor="let try of tries">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+    <div #tryArea id={{try}} [ngClass]="{'currently': try == tryCounter+1}" class="try" *ngFor="let try of tries">
+        <div *ngFor="let letter of currentWord.split('')"></div>
     </div>
 </div>
