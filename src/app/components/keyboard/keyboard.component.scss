@@ -33,5 +33,12 @@ div {
     min-width: 6rem;
     align-items: center;
     justify-content: center;
+    line-height: -2px;
+    &:hover {
+      align-items: start;
+    }
+    & * {
+      height: 100%;
+    }
   }
 }

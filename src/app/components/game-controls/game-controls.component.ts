@@ -16,7 +16,5 @@ import { WordService } from 'src/app/service/word.service';
 })
 export class GameControlsComponent implements OnInit {
   constructor(private wordService: WordService) {}
-  ngOnInit(): void {
-    this.wordService.setLetterExistsInWord('A', true);
-  }
+  ngOnInit(): void {}
 }

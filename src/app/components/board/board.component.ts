@@ -31,14 +31,16 @@ export class BoardComponent implements OnInit, AfterViewInit {
       .getRemainingTries()
       .subscribe((tryCounter) => (this.tryCounter = tryCounter));
     this.tries = this.gameControl.getNumberOfTries();
-    this.currentWord = this.gameControl.getCurrentWord();
+    this.gameControl
+      .getCurrentWord()
+      .subscribe((word) => (this.currentWord = word));
   }
 
   ngAfterViewInit(): void {
     this.gameControl.setTryArea(this.tryArea);
   }
 
-  @HostListener('window:keypress', ['$event'])
+  @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
     if (this.gameControl.isKeyValid(event.key)) {
       this.gameControl.processKey(event.key);
