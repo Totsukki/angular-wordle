@@ -1,4 +1,4 @@
 export interface Letter {
   letter: string;
-  matchingStatus: number | null;
+  matchingStatus: string | null;
 }

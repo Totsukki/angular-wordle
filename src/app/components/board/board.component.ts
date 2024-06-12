@@ -8,6 +8,7 @@ import {
   Query,
   QueryList,
   ViewChildren,
+  ViewEncapsulation,
 } from '@angular/core';
 import { GameControlsService } from 'src/app/service/game-controls.service';
 
@@ -17,6 +18,7 @@ import { GameControlsService } from 'src/app/service/game-controls.service';
   imports: [CommonModule],
   templateUrl: './board.component.html',
   styleUrl: './board.component.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class BoardComponent implements OnInit, AfterViewInit {
   @ViewChildren('tryArea') tryArea!: QueryList<ElementRef>;
@@ -31,9 +33,9 @@ export class BoardComponent implements OnInit, AfterViewInit {
       .getRemainingTries()
       .subscribe((tryCounter) => (this.tryCounter = tryCounter));
     this.tries = this.gameControl.getNumberOfTries();
-    this.gameControl
-      .getCurrentWord()
-      .subscribe((word) => (this.currentWord = word));
+    this.gameControl.getCurrentWord().subscribe((word) => {
+      this.currentWord = word;
+    });
   }
 
   ngAfterViewInit(): void {

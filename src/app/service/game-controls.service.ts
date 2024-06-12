@@ -1,48 +1,43 @@
-import { HttpClient } from '@angular/common/http';
 import {
   ElementRef,
   Injectable,
-  OnInit,
   QueryList,
   Renderer2,
   RendererFactory2,
 } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { Letter } from '../models/letter.model';
-import { environment } from 'src/environments/environment.development';
+import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
 import { WordService } from './word.service';
+import { Letter } from '../models/letter.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class GameControlsService implements OnInit {
+export class GameControlsService {
   private tryArea$ = new BehaviorSubject<QueryList<ElementRef>>(
     new QueryList<ElementRef>()
   );
   private renderer: Renderer2;
 
-  tries = [1, 2, 3, 4, 5];
-  // fourLetterList = ['RIPE', 'EARN', 'PILE'];
-  // fiveLetterList = ['LEARN', 'PLEAD', 'CRAVE'];
+  tries = [1, 2, 3, 4, 5, 6];
 
   tryCounter$ = new BehaviorSubject<number>(0);
   currentWord$ = new BehaviorSubject<string>('');
   word$ = new BehaviorSubject<string>('');
   splittedWord!: string[];
 
+  wordResult = {};
+  isWordExisting = false;
+
   constructor(
     private rendererFactory: RendererFactory2,
     private wordService: WordService
   ) {
-    // const wordList = [...this.fourLetterList, ...this.fiveLetterList];
-    // this.currentWord = wordList[Math.floor(Math.random() * wordList.length)];
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.wordService.getCurrentWord().subscribe((word) => {
       this.currentWord$.next(word[0]);
     });
   }
 
-  ngOnInit(): void {}
   setTryArea(tryArea$: QueryList<ElementRef>): void {
     this.tryArea$.next(tryArea$);
   }
@@ -51,24 +46,26 @@ export class GameControlsService implements OnInit {
     return /^[a-zA-Z]$/.test(key) || key === 'Enter' || key === 'Backspace';
   }
 
-  processKey(key: string): void {
+  async processKey(key: string): Promise<void> {
     this.splittedWord = this.word$.getValue().split('');
 
     if (key === 'Enter') {
       const hasTries = this.tryCounter$.getValue() < this.tries.length - 1;
       const isFilled =
         this.word$.getValue().length === this.currentWord$.getValue().length;
-      if (hasTries && isFilled) {
-        this.checkWord();
-        this.tryCounter$.next(this.tryCounter$.getValue() + 1);
-        this.word$.next('');
-        this.splittedWord = [];
-      } else {
-        if (hasTries) {
-          console.log('here');
-        } else {
-          console.log('asdfhere');
+      if (hasTries) {
+        const isValidWord = await this.checkWord();
+        if (isFilled && isValidWord) {
+          this.tryCounter$.next(this.tryCounter$.getValue() + 1);
+          this.word$.next('');
+          this.splittedWord = [];
         }
+      } else {
+        // if (hasTries) {
+        //   this.checkWord();
+        // } else {
+        //   console.log('asdfhere');
+        // }
       }
     } else {
       this.tryArea$.getValue().forEach((div) => {
@@ -89,11 +86,13 @@ export class GameControlsService implements OnInit {
       const upperCasedKey = key.toUpperCase();
       this.word$.next(this.word$.getValue() + upperCasedKey);
       const selectedDiv = divElements[this.word$.getValue().length - 1];
-      this.renderer.setProperty(selectedDiv, 'textContent', upperCasedKey);
+      const letter = this.renderer.createElement('b');
+      this.renderer.setProperty(letter, 'textContent', upperCasedKey);
+      this.renderer.addClass(letter, 'letter');
+      this.renderer.appendChild(selectedDiv, letter);
       this.renderer.addClass(selectedDiv, 'pop');
     }
   };
-
   private removeLetter = (divElements: NodeList[]) => {
     if (this.word$.getValue().length > 0) {
       this.word$.next(
@@ -105,14 +104,79 @@ export class GameControlsService implements OnInit {
     }
   };
 
-  checkWord() {
+  async checkWord() {
     const currentWord = this.currentWord$.getValue();
-    const word = this.word$.getValue();
-    const isCorrect = currentWord === word;
-    if (isCorrect) {
-      console.log('correct');
+    const wordValue = this.word$.getValue();
+    const tryCounterValue = this.tryCounter$.getValue();
+    const wordCheckStatus: Letter[] = [];
+    const tryAreaValue = this.tryArea$.getValue();
+    const isWordValid = await firstValueFrom(
+      this.wordService.checkWordIfExists(wordValue)
+    );
+
+    const currentDiv = tryAreaValue.toArray()[tryCounterValue].nativeElement;
+
+    if (isWordValid) {
+      currentWord.split('').forEach((letter, i) => {
+        let matchingStatus = '';
+        if (letter === wordValue[i]) {
+          matchingStatus = 'correct';
+        } else if (
+          currentWord
+            .split('')
+            .findIndex((letter) => letter === wordValue[i]) >= 0
+        ) {
+          matchingStatus = 'exists';
+        } else {
+          matchingStatus = 'wrong';
+        }
+        wordCheckStatus.push({
+          letter: wordValue[i],
+          matchingStatus,
+        });
+      });
+
+      return new Promise((resolve, reject) => {
+        const div = tryAreaValue.find(
+          (div) => div.nativeElement.id == tryCounterValue + 1
+        );
+        if (div) {
+          const children = Array.from(currentDiv.children);
+          const childPromises = children.map((child, i) => {
+            return new Promise((childResolve) => {
+              setTimeout(() => {
+                this.renderer.addClass(child, 'tumble');
+                setTimeout(() => {
+                  this.renderer.addClass(
+                    child,
+                    wordCheckStatus[i].matchingStatus || ''
+                  );
+                  childResolve(true);
+                }, 200);
+              }, i * 800);
+            });
+          });
+          Promise.all(childPromises).then(() => {
+            setTimeout(() => {
+              wordCheckStatus.forEach((wordCheck) => {
+                this.wordService.setLetterExistsInWord(
+                  wordCheck.letter,
+                  wordCheck.matchingStatus || ''
+                );
+              });
+              resolve(true);
+            }, 500);
+          });
+        } else {
+          reject(false);
+        }
+      });
     } else {
-      console.log('incorrect');
+      this.renderer.addClass(currentDiv, 'shake');
+      setTimeout(() => {
+        this.renderer.removeClass(currentDiv, 'shake');
+      }, 200);
+      return false;
     }
   }
   getRemainingTries(): Observable<number> {

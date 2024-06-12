@@ -26,7 +26,6 @@ import { WordService } from 'src/app/service/word.service';
     provideIcons({ bootstrapBackspace, bootstrapArrowReturnLeft }),
   ],
   styleUrl: './keyboard.component.scss',
-  providers: [WordService],
 })
 export class KeyboardComponent implements OnInit, OnDestroy {
   @ViewChildren('tryArea') tryArea!: QueryList<ElementRef>;
@@ -47,7 +46,6 @@ export class KeyboardComponent implements OnInit, OnDestroy {
   }
 
   onKeyClick(key: string): void {
-    console.log(key);
     this.gameControls.processKey(key);
   }
   ngOnDestroy(): void {

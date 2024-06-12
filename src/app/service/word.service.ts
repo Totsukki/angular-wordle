@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of } from 'rxjs';
 import { Letter } from '../models/letter.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment.development';
@@ -39,19 +39,21 @@ export class WordService {
 
   constructor(private http: HttpClient) {}
   getLetterList = () => this.letterList.asObservable();
-  setLetterExistsInWord = (letter: string, matchStatus: number) => {
+  setLetterExistsInWord = (letter: string, matchStatus: string) => {
     const currentValue = this.letterList.getValue();
     const letterIndex = currentValue.findIndex(
-      (currentIndex) => currentIndex.letter === letter
+      (currentIndex) => currentIndex.letter === letter.toUpperCase()
     );
-    currentValue[letterIndex].matchingStatus = matchStatus;
-    this.letterList.next(currentValue);
+    if (currentValue[letterIndex].matchingStatus) {
+      currentValue[letterIndex].matchingStatus = matchStatus;
+      this.letterList.next(currentValue);
+    }
   };
 
   getCurrentWord(): Observable<string[]> {
     const isWordFourLetter = Math.random() < 0.5;
     if (isWordFourLetter) return this.getFourLetterWord();
-    else return this.getFiveLetterWord();
+    return this.getFiveLetterWord();
   }
 
   getFourLetterWord(): Observable<string[]> {
@@ -61,6 +63,23 @@ export class WordService {
         index + 1
       }`
     );
+  }
+
+  checkWordIfExists(word: string): Observable<boolean> {
+    if (word.length > 4) {
+      return this.http
+        .get<string[]>(`${environment.apiBaseUrl}/fiveLetterWords`)
+        .pipe(
+          map((words) => words.includes(word)),
+          catchError(() => of(false))
+        );
+    }
+    return this.http
+      .get<string[]>(`${environment.apiBaseUrl}/fourLetterWords`)
+      .pipe(
+        map((words) => words.includes(word)),
+        catchError(() => of(false))
+      );
   }
 
   getFiveLetterWord(): Observable<string[]> {

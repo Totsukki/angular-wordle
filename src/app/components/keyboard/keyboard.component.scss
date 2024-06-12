@@ -27,6 +27,10 @@ div {
         inset 0 -5px 10px 5px rgb(212, 212, 212);
     }
   }
+  span[class]:not([class=""]),
+  span[class]:not(.special-key) {
+    color: white !important;
+  }
   .special-key {
     display: flex;
     gap: 10px;
@@ -40,5 +44,14 @@ div {
     & * {
       height: 100%;
     }
+  }
+  .correct {
+    background: #6baa65 !important;
+  }
+  .exists {
+    background: #c9b457 !important;
+  }
+  .wrong {
+    background: #787c7f !important;
   }
 }
