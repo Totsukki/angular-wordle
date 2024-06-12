@@ -52,9 +52,8 @@ export class GameControlsService {
       const isFilled =
         this.word$.getValue().length === this.currentWord$.getValue().length;
 
-      if (hasTries) {
+      if (hasTries && isFilled) {
         const isValidWord = await this.checkWord();
-        console.log(this.checkIfWon());
         if (this.checkIfWon()) {
           this.resetGame();
           return;
@@ -124,7 +123,7 @@ export class GameControlsService {
     const isWordValid = await firstValueFrom(
       this.wordService.checkWordIfExists(wordValue)
     );
-
+    this.wordCheckStatus = [];
     const currentDiv = tryAreaValue.toArray()[tryCounterValue].nativeElement;
 
     if (isWordValid) {
@@ -175,7 +174,6 @@ export class GameControlsService {
                   wordCheck.matchingStatus || ''
                 );
               });
-              console.log(this.wordService.getLetterList());
               resolve(true);
             }, 300);
           });
@@ -220,7 +218,6 @@ export class GameControlsService {
   getNewWord() {
     this.wordService.getCurrentWord().subscribe((word) => {
       this.currentWord$.next(word[0]);
-      console.log(this.currentWord$.getValue());
     });
   }
   getRemainingTries(): Observable<number> {

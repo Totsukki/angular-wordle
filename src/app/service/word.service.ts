@@ -78,7 +78,6 @@ export class WordService {
     lettersData.forEach((letter) => {
       letter.matchingStatus = null;
     });
-    console.log(lettersData);
     this.letterList.next(lettersData);
   }
   getFourLetterWord(): Observable<string[]> {
