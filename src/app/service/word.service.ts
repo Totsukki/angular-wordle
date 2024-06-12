@@ -44,7 +44,7 @@ export class WordService {
     const letterIndex = currentValue.findIndex(
       (currentIndex) => currentIndex.letter === letter.toUpperCase()
     );
-    if (currentValue[letterIndex].matchingStatus) {
+    if (currentValue[letterIndex].matchingStatus !== 'correct') {
       currentValue[letterIndex].matchingStatus = matchStatus;
       this.letterList.next(currentValue);
     }
@@ -54,15 +54,6 @@ export class WordService {
     const isWordFourLetter = Math.random() < 0.5;
     if (isWordFourLetter) return this.getFourLetterWord();
     return this.getFiveLetterWord();
-  }
-
-  getFourLetterWord(): Observable<string[]> {
-    const index = Math.ceil(Math.random() * 2096);
-    return this.http.get<string[]>(
-      `${environment.apiBaseUrl}/fourLetterWords?_start=${index}&_end=${
-        index + 1
-      }`
-    );
   }
 
   checkWordIfExists(word: string): Observable<boolean> {
@@ -80,6 +71,23 @@ export class WordService {
         map((words) => words.includes(word)),
         catchError(() => of(false))
       );
+  }
+
+  resetLettersData() {
+    const lettersData = this.letterList.getValue();
+    lettersData.forEach((letter) => {
+      letter.matchingStatus = null;
+    });
+    console.log(lettersData);
+    this.letterList.next(lettersData);
+  }
+  getFourLetterWord(): Observable<string[]> {
+    const index = Math.ceil(Math.random() * 2096);
+    return this.http.get<string[]>(
+      `${environment.apiBaseUrl}/fourLetterWords?_start=${index}&_end=${
+        index + 1
+      }`
+    );
   }
 
   getFiveLetterWord(): Observable<string[]> {

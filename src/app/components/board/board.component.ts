@@ -22,6 +22,7 @@ import { GameControlsService } from 'src/app/service/game-controls.service';
 })
 export class BoardComponent implements OnInit, AfterViewInit {
   @ViewChildren('tryArea') tryArea!: QueryList<ElementRef>;
+
   tryCounter!: number;
   tries!: number[];
   currentWord!: string;
@@ -40,6 +41,10 @@ export class BoardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.gameControl.setTryArea(this.tryArea);
+  }
+
+  resetBoard() {
+    this.tryArea.forEach(console.log);
   }
 
   @HostListener('window:keydown', ['$event'])

@@ -25,17 +25,15 @@ export class GameControlsService {
   word$ = new BehaviorSubject<string>('');
   splittedWord!: string[];
 
-  wordResult = {};
   isWordExisting = false;
+  wordCheckStatus: Letter[] = [];
 
   constructor(
     private rendererFactory: RendererFactory2,
     private wordService: WordService
   ) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
-    this.wordService.getCurrentWord().subscribe((word) => {
-      this.currentWord$.next(word[0]);
-    });
+    this.getNewWord();
   }
 
   setTryArea(tryArea$: QueryList<ElementRef>): void {
@@ -50,11 +48,17 @@ export class GameControlsService {
     this.splittedWord = this.word$.getValue().split('');
 
     if (key === 'Enter') {
-      const hasTries = this.tryCounter$.getValue() < this.tries.length - 1;
+      const hasTries = this.tryCounter$.getValue() < this.tries.length;
       const isFilled =
         this.word$.getValue().length === this.currentWord$.getValue().length;
+
       if (hasTries) {
         const isValidWord = await this.checkWord();
+        console.log(this.checkIfWon());
+        if (this.checkIfWon()) {
+          this.resetGame();
+          return;
+        }
         if (isFilled && isValidWord) {
           this.tryCounter$.next(this.tryCounter$.getValue() + 1);
           this.word$.next('');
@@ -103,12 +107,19 @@ export class GameControlsService {
       this.renderer.removeClass(currentDiv, 'pop');
     }
   };
-
+  checkIfWon() {
+    let correctCount = 0;
+    this.wordCheckStatus.forEach((status) => {
+      if (status.matchingStatus === 'correct') {
+        correctCount++;
+      }
+    });
+    return correctCount === this.currentWord$.getValue().length ? true : false;
+  }
   async checkWord() {
     const currentWord = this.currentWord$.getValue();
     const wordValue = this.word$.getValue();
     const tryCounterValue = this.tryCounter$.getValue();
-    const wordCheckStatus: Letter[] = [];
     const tryAreaValue = this.tryArea$.getValue();
     const isWordValid = await firstValueFrom(
       this.wordService.checkWordIfExists(wordValue)
@@ -130,7 +141,7 @@ export class GameControlsService {
         } else {
           matchingStatus = 'wrong';
         }
-        wordCheckStatus.push({
+        this.wordCheckStatus.push({
           letter: wordValue[i],
           matchingStatus,
         });
@@ -149,23 +160,24 @@ export class GameControlsService {
                 setTimeout(() => {
                   this.renderer.addClass(
                     child,
-                    wordCheckStatus[i].matchingStatus || ''
+                    this.wordCheckStatus[i].matchingStatus || ''
                   );
                   childResolve(true);
-                }, 200);
-              }, i * 800);
+                }, 100);
+              }, i * 500);
             });
           });
           Promise.all(childPromises).then(() => {
             setTimeout(() => {
-              wordCheckStatus.forEach((wordCheck) => {
+              this.wordCheckStatus.forEach((wordCheck) => {
                 this.wordService.setLetterExistsInWord(
                   wordCheck.letter,
                   wordCheck.matchingStatus || ''
                 );
               });
+              console.log(this.wordService.getLetterList());
               resolve(true);
-            }, 500);
+            }, 300);
           });
         } else {
           reject(false);
@@ -178,6 +190,38 @@ export class GameControlsService {
       }, 200);
       return false;
     }
+  }
+
+  resetGame() {
+    this.getNewWord();
+    this.tryCounter$.next(0);
+    this.word$.next('');
+    this.wordService.resetLettersData();
+    this.wordCheckStatus = [];
+    this.splittedWord = [];
+    this.resetBoard();
+  }
+
+  resetBoard() {
+    const currentBoard = this.tryArea$.getValue();
+    currentBoard.forEach((div, i) => {
+      const parentDivNativeEl = div.nativeElement;
+      i === 0
+        ? this.renderer.addClass(parentDivNativeEl, 'currently')
+        : this.renderer.removeClass(parentDivNativeEl, 'currently');
+      const children = Array.from(div.nativeElement.children);
+      children.forEach((child) => {
+        this.renderer.removeAttribute(child, 'class');
+        this.renderer.setProperty(child, 'textContent', '');
+      });
+    });
+  }
+
+  getNewWord() {
+    this.wordService.getCurrentWord().subscribe((word) => {
+      this.currentWord$.next(word[0]);
+      console.log(this.currentWord$.getValue());
+    });
   }
   getRemainingTries(): Observable<number> {
     return this.tryCounter$.asObservable();
