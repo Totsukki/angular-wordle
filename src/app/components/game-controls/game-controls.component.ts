@@ -52,7 +52,6 @@ export class GameControlsComponent implements OnInit {
 
   onResetGame(el: Event): void {
     const target = el.target as HTMLElement;
-    console.log(target);
     target.blur();
     this.gameControl.resetGame();
   }

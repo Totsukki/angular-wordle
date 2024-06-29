@@ -206,7 +206,7 @@ export class GameControlsService {
               });
               this.isAnimating = false;
               resolve(true);
-            }, 300);
+            }, 200);
           });
         } else {
           reject(new Error('error'));
