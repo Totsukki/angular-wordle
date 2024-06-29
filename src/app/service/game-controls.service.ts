@@ -8,6 +8,7 @@ import {
 import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
 import { WordService } from './word.service';
 import { Letter } from '../models/letter.model';
+import { ModalService } from './modal.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,20 +18,24 @@ export class GameControlsService {
     new QueryList<ElementRef>()
   );
   private renderer: Renderer2;
-
   tries = [1, 2, 3, 4, 5, 6];
 
   tryCounter$ = new BehaviorSubject<number>(0);
   currentWord$ = new BehaviorSubject<string>('');
-  word$ = new BehaviorSubject<string>('');
+  gameWord$ = new BehaviorSubject<string>('');
   splittedWord!: string[];
 
-  isWordExisting = false;
   wordCheckStatus: Letter[] = [];
+
+  isWordExisting = false;
+  isAnimating = false;
+  isFetching$ = new BehaviorSubject<boolean>(false);
+  hasWon = false;
 
   constructor(
     private rendererFactory: RendererFactory2,
-    private wordService: WordService
+    private wordService: WordService,
+    private modalService: ModalService
   ) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.getNewWord();
@@ -45,22 +50,27 @@ export class GameControlsService {
   }
 
   async processKey(key: string): Promise<void> {
-    this.splittedWord = this.word$.getValue().split('');
+    this.splittedWord = this.gameWord$.getValue().split('');
 
     if (key === 'Enter') {
       const hasTries = this.tryCounter$.getValue() < this.tries.length;
       const isFilled =
-        this.word$.getValue().length === this.currentWord$.getValue().length;
+        this.gameWord$.getValue().length ===
+        this.currentWord$.getValue().length;
 
       if (hasTries && isFilled) {
         const isValidWord = await this.checkWord();
         if (this.checkIfWon()) {
-          this.resetGame();
+          this.modalService.setContent('You won!');
+          this.modalService.setTitle('Congratulations!');
+          this.modalService.onToggleModal(true);
+          this.hasWon = true;
           return;
         }
+
         if (isFilled && isValidWord) {
           this.tryCounter$.next(this.tryCounter$.getValue() + 1);
-          this.word$.next('');
+          this.gameWord$.next('');
           this.splittedWord = [];
         }
       } else {
@@ -87,25 +97,26 @@ export class GameControlsService {
   private addLetter = (divElements: NodeList[], key: string) => {
     if (this.splittedWord.length < this.currentWord$.getValue().length) {
       const upperCasedKey = key.toUpperCase();
-      this.word$.next(this.word$.getValue() + upperCasedKey);
-      const selectedDiv = divElements[this.word$.getValue().length - 1];
+      this.gameWord$.next(this.gameWord$.getValue() + upperCasedKey);
+      const selectedDiv = divElements[this.gameWord$.getValue().length - 1];
       const letter = this.renderer.createElement('b');
       this.renderer.setProperty(letter, 'textContent', upperCasedKey);
       this.renderer.addClass(letter, 'letter');
-      this.renderer.appendChild(selectedDiv, letter);
       this.renderer.addClass(selectedDiv, 'pop');
+      this.renderer.appendChild(selectedDiv, letter);
     }
   };
   private removeLetter = (divElements: NodeList[]) => {
-    if (this.word$.getValue().length > 0) {
-      this.word$.next(
-        this.word$.getValue().slice(0, this.word$.getValue().length - 1)
+    if (this.gameWord$.getValue().length > 0) {
+      this.gameWord$.next(
+        this.gameWord$.getValue().slice(0, this.gameWord$.getValue().length - 1)
       );
-      const currentDiv = divElements[this.word$.getValue().length];
+      const currentDiv = divElements[this.gameWord$.getValue().length];
       this.renderer.setProperty(currentDiv, 'textContent', '');
       this.renderer.removeClass(currentDiv, 'pop');
     }
   };
+
   checkIfWon() {
     let correctCount = 0;
     this.wordCheckStatus.forEach((status) => {
@@ -113,11 +124,12 @@ export class GameControlsService {
         correctCount++;
       }
     });
-    return correctCount === this.currentWord$.getValue().length ? true : false;
+    return correctCount === this.currentWord$.getValue().length;
   }
   async checkWord() {
+    this.isAnimating = true;
     const currentWord = this.currentWord$.getValue();
-    const wordValue = this.word$.getValue();
+    const wordValue = this.gameWord$.getValue();
     const tryCounterValue = this.tryCounter$.getValue();
     const tryAreaValue = this.tryArea$.getValue();
     const isWordValid = await firstValueFrom(
@@ -174,11 +186,12 @@ export class GameControlsService {
                   wordCheck.matchingStatus || ''
                 );
               });
+              this.isAnimating = false;
               resolve(true);
             }, 300);
           });
         } else {
-          reject(false);
+          reject(new Error('error'));
         }
       });
     } else {
@@ -186,17 +199,19 @@ export class GameControlsService {
       setTimeout(() => {
         this.renderer.removeClass(currentDiv, 'shake');
       }, 200);
+      this.isAnimating = false;
       return false;
     }
   }
 
   resetGame() {
-    this.getNewWord();
+    this.hasWon = false;
     this.tryCounter$.next(0);
-    this.word$.next('');
+    this.gameWord$.next('');
     this.wordService.resetLettersData();
     this.wordCheckStatus = [];
     this.splittedWord = [];
+    this.getNewWord();
     this.resetBoard();
   }
 
@@ -216,8 +231,10 @@ export class GameControlsService {
   }
 
   getNewWord() {
+    this.isFetching$.next(true);
     this.wordService.getCurrentWord().subscribe((word) => {
-      this.currentWord$.next(word[0]);
+      this.currentWord$.next(word[0].toUpperCase());
+      this.isFetching$.next(false);
     });
   }
   getRemainingTries(): Observable<number> {

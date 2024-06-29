@@ -60,6 +60,42 @@ $borderBlack: #000;
   animation-duration: 200ms;
 }
 
+.loading {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 2rem;
+    z-index: 20;
+    background: linear-gradient(
+      90deg,
+      transparent 0 30%,
+      #fff5 70%,
+      transparent 100%
+    );
+    animation-name: load;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+  }
+  .try {
+    & > * {
+      position: relative;
+      &:after {
+        position: absolute;
+        top: 0;
+        left: 0;
+        content: "";
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.206);
+      }
+    }
+  }
+}
+
 @keyframes popAnimate {
   100% {
     scale: 1.1;
@@ -84,5 +120,17 @@ $borderBlack: #000;
   }
   0% {
     transform: translateX(10px);
+  }
+}
+
+@keyframes load {
+  0% {
+    transform: translateX(0%);
+  }
+  50% {
+    transform: translateX(760%);
+  }
+  100% {
+    transform: translateX(-1%);
   }
 }

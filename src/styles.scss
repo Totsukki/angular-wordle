@@ -1,6 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+$darkModeBg: rgb(24, 24, 24);
+$borderRadius: 10px;
+
 .dark-mode {
-  background-color: rgb(24, 24, 24) !important;
+  background-color: $darkModeBg !important;
   * {
     border-color: white !important;
     color: white;
@@ -14,8 +17,18 @@
     border: 1px solid rgba(255, 255, 255, 0.349) !important;
     background-color: black !important;
   }
+  .modal {
+    background: $darkModeBg !important;
+    border: 1px solid rgba(255, 255, 255, 0.349) !important;
+  }
 }
 
 body {
   transition: all 200ms;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html {
+  margin: 0;
 }

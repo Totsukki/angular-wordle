@@ -5,7 +5,6 @@ import {
   ElementRef,
   HostListener,
   OnInit,
-  Query,
   QueryList,
   ViewChildren,
   ViewEncapsulation,
@@ -26,8 +25,13 @@ export class BoardComponent implements OnInit, AfterViewInit {
   tryCounter!: number;
   tries!: number[];
   currentWord!: string;
+  isFetching!: boolean;
 
-  constructor(private gameControl: GameControlsService) {}
+  constructor(private gameControl: GameControlsService) {
+    this.gameControl.isFetching$.subscribe((isFetching) => {
+      this.isFetching = isFetching;
+    });
+  }
 
   ngOnInit(): void {
     this.gameControl
@@ -43,14 +47,16 @@ export class BoardComponent implements OnInit, AfterViewInit {
     this.gameControl.setTryArea(this.tryArea);
   }
 
-  resetBoard() {
-    this.tryArea.forEach(console.log);
-  }
-
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
-    if (this.gameControl.isKeyValid(event.key)) {
-      this.gameControl.processKey(event.key);
+    if (
+      !this.gameControl.isAnimating &&
+      !this.gameControl.isFetching$.getValue() &&
+      !this.gameControl.hasWon
+    ) {
+      if (this.gameControl.isKeyValid(event.key)) {
+        this.gameControl.processKey(event.key);
+      }
     }
   }
 }

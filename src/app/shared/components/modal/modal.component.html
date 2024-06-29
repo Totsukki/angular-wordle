@@ -1,0 +1,48 @@
+<div class="modal-container" *ngIf="isVisible">
+  <div class="modal-backdrop" (click)="onToggle()">
+  </div>
+  <div #modal class="modal">
+    <div class="modal-header">
+      <h1>{{title}}</h1>
+      <ng-icon (click)="onToggle()" onkeypress="$event => $event.key === 'Enter' ? onToggle() : null " name="bootstrapXLg" tabindex="0" />
+    </div>
+    <hr/>
+    <div class="modal-content">
+      <ng-container *ngIf="content; else howToPlay">
+        {{content}}
+      </ng-container>
+
+      <ng-template #howToPlay>
+        <p>
+          The goal of the game is to guess the word in as few guesses as possible.
+        </p>
+        <p>
+          You have 6 guesses to find the word.
+        </p>
+        <p>
+          Each guess is made by typing a letter into the keyboard or clicking a key in the keyboard area of the game.
+        </p>
+        <div></div>
+        <p>
+          If the letter is in the word, it will be revealed on the board.
+        </p>
+        <p>
+          If the letter is not in the word, it will be revealed as an X on the board.
+        </p>
+        <p>
+          If you guess the word correctly, you win!
+        </p>
+        <p>
+          If you run out of guesses, you lose!
+        </p>
+        <p>
+          Good luck!
+        </p>
+      </ng-template>
+
+    </div>
+    <div class="modal-footer" *ngIf="content">
+      <button (click)="onPlayAgain()">Play Again</button>
+    </div>
+  </div>
+</div>

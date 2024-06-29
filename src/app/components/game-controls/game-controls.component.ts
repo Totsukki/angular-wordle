@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   bootstrapArrowRepeat,
@@ -6,9 +6,8 @@ import {
   bootstrapQuestion,
   bootstrapSunFill,
 } from '@ng-icons/bootstrap-icons';
-import { WordService } from 'src/app/service/word.service';
 import { GameControlsService } from 'src/app/service/game-controls.service';
-import { BoardComponent } from '../board/board.component';
+import { ModalService } from 'src/app/service/modal.service';
 
 @Component({
   selector: 'app-game-controls',
@@ -27,8 +26,16 @@ import { BoardComponent } from '../board/board.component';
 })
 export class GameControlsComponent implements OnInit {
   isDarkMode = JSON.parse(localStorage.getItem('isDarkMode') ?? 'false');
+  isFetching = false;
+  constructor(
+    private gameControl: GameControlsService,
+    private modalService: ModalService
+  ) {
+    this.gameControl.isFetching$.subscribe((isFetching) => {
+      this.isFetching = isFetching;
+    });
+  }
 
-  constructor(private gameControl: GameControlsService) {}
   ngOnInit(): void {
     this.isDarkMode
       ? document.body.classList.add('dark-mode')
@@ -42,9 +49,17 @@ export class GameControlsComponent implements OnInit {
       ? document.body.classList.add('dark-mode')
       : document.body.classList.remove('dark-mode');
   }
+
   onResetGame(el: Event): void {
     const target = el.target as HTMLElement;
+    console.log(target);
     target.blur();
     this.gameControl.resetGame();
+  }
+
+  showHowToPlayModal() {
+    this.modalService.setTitle('How to Play');
+    this.modalService.setContent('');
+    this.modalService.onToggleModal();
   }
 }
