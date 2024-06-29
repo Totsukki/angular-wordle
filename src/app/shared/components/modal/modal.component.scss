@@ -1,0 +1,131 @@
+.modal-container {
+  inset: 0 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  overflow: hidden;
+
+  .modal-backdrop {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #0009;
+  }
+
+  .modal {
+    background-color: rgba(255, 255, 255, 0.829);
+    min-width: 5rem;
+    max-width: 25rem;
+    padding: 2rem 2rem;
+    border-radius: 10px;
+    animation-name: fadeInFromTop;
+    animation-duration: 500ms;
+    z-index: 9999;
+
+    .hint {
+      background: #0009;
+      padding: 0.8rem;
+      border-radius: 10px;
+      span {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        border: none !important;
+        background: none !important;
+        margin-bottom: 0.5rem;
+        * {
+          margin: 0;
+          font-style: normal;
+        }
+        svg {
+          color: rgb(255, 255, 151);
+        }
+      }
+      p {
+        margin: 0;
+        font-style: italic;
+      }
+    }
+    .modal-header {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      ng-icon {
+        position: absolute;
+        right: 0;
+        &:hover {
+          cursor: pointer;
+          opacity: 0.8;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        padding-right: 2rem;
+      }
+    }
+
+    .modal-footer {
+      margin-top: 2rem;
+      & button {
+        padding: 0.5rem;
+        background: rgb(130, 130, 255);
+        border-radius: 5px;
+        color: white;
+        &:hover {
+          opacity: 0.8;
+          cursor: pointer;
+        }
+      }
+    }
+    hr {
+      opacity: 0.3;
+    }
+  }
+
+  .fade-out {
+    animation-name: fadeOutToBottom;
+    animation-duration: 500ms;
+  }
+
+  @keyframes fadeInFromTop {
+    0% {
+      opacity: 0;
+      transform: translateY(-20%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOutToBottom {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(20%);
+    }
+  }
+}
+
+body:not(.dark-mode) {
+  button {
+    border: none !important;
+  }
+  .hint {
+    background: rgba(146, 146, 146, 0.4) !important;
+    padding: 0.5rem;
+  }
+}

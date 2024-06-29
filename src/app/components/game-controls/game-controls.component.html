@@ -1,0 +1,11 @@
+<div class="game-controls">
+    <button (click)="onResetGame($event)" type="button" title="New Game">
+        <ng-icon name="bootstrapArrowRepeat" />
+    </button>
+    <button (click)="showHowToPlayModal()" type="button" title="How to play?">
+        <ng-icon name="bootstrapQuestion" />
+    </button>
+    <button (click)="switchMode()" type="button" title="Switch to {{isDarkMode ? 'Light' : 'Dark'}} Mode">
+        <ng-icon width=".5em" name="{{isDarkMode ? 'bootstrapSunFill' : 'bootstrapMoonFill'}}" />
+    </button>
+</div>

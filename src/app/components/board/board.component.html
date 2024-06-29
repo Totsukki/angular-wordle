@@ -1,0 +1,14 @@
+<div class="board">
+    <ng-container *ngIf="isFetching && !currentWord.length; else boardBody">
+      <div class="loading">
+        <div *ngFor="let try of tries" class="try">
+          <div *ngFor="let i of [1,2,3,4]"></div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #boardBody>
+        <div #tryArea id={{try}} [ngClass]="{'currently': try == tryCounter+1}" class="try" *ngFor="let try of tries">
+          <div *ngFor="let letter of currentWord.split('')"></div>
+    </div>
+    </ng-template>
+</div>

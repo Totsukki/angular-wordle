@@ -1,0 +1,49 @@
+.game-area {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 97vh;
+  .content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo {
+    font-family: Helvetica, sans-serif;
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    justify-content: center;
+    align-items: end;
+    margin-bottom: 20px;
+    position: relative;
+    h1 {
+      margin: 0;
+      color: white;
+      &:nth-child(n) {
+        background: #6baa65;
+      }
+      &:nth-child(2n) {
+        background: #c9b457;
+      }
+      &:nth-child(3n) {
+        background: #787c7f;
+      }
+      padding: 0;
+      min-width: 50px;
+      text-align: center;
+      padding: 10px 0;
+    }
+    small {
+      position: absolute;
+      font-family: cursive;
+      top: -18px;
+      right: 0px;
+    }
+  }
+}

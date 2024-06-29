@@ -1,0 +1,21 @@
+<div>
+    <ng-container *ngFor="let key of keys; index as i">
+        <span class="{{key.matchingStatus}}" (click)="onKeyClick(key.letter)" *ngIf="i < 10">{{key.letter }}
+        </span>
+    </ng-container>
+    <span class="special-key" (click)="onKeyClick('Backspace')"><ng-icon name="bootstrapBackspace"></ng-icon></span>
+</div>
+<div>
+    <ng-container *ngFor="let key of keys; index as i">
+        <span class="{{key.matchingStatus}}" (click)="onKeyClick(key.letter)" *ngIf="i > 9 && i< 19">{{key.letter }}
+        </span>
+    </ng-container>
+    <span class="special-key" (click)="onKeyClick('Enter')">Enter<ng-icon
+            name="bootstrapArrowReturnLeft"></ng-icon></span>
+</div>
+<div>
+    <ng-container *ngFor="let key of keys; index as i">
+        <span class="{{key.matchingStatus}}" (click)="onKeyClick(key.letter)" *ngIf="i >18 ">{{key.letter }}
+        </span>
+    </ng-container>
+</div>

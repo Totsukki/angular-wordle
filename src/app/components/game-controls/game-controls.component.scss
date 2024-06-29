@@ -1,0 +1,67 @@
+.game-controls {
+  position: absolute;
+  top: 8rem;
+  right: -22%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+
+  button {
+    display: flex;
+    padding: 1rem;
+    border: none;
+    font-size: 2em;
+    border-radius: 10px;
+    transition: all 300ms ease-in-out;
+    background: #fff;
+    position: relative;
+    &:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+    &:hover {
+      & * {
+        transition: transform 500ms;
+      }
+      &:first-child {
+        ng-icon {
+          transform: rotate(360deg);
+        }
+      }
+      &:nth-child(2) {
+        ng-icon {
+          animation-name: sway;
+          animation-duration: 400ms;
+        }
+      }
+      cursor: pointer;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 10px 1px rgb(204, 203, 203),
+        inset 0 -2px 5px 1px rgb(204, 203, 203);
+    }
+  }
+}
+
+@keyframes sway {
+  0% {
+    rotate: 30deg;
+  }
+  25% {
+    rotate: -30deg;
+  }
+  50% {
+    rotate: 30deg;
+  }
+  75% {
+    rotate: -30deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}

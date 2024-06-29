@@ -1,0 +1,63 @@
+<div class="modal-container" *ngIf="isVisible">
+  <div class="modal-backdrop" (click)="onToggle()">
+  </div>
+  <div #modal class="modal">
+    <div class="modal-header">
+      <h1>{{title}}</h1>
+      <ng-icon (click)="onToggle()" onkeypress="$event => $event.key === 'Enter' ? onToggle() : null "
+        name="bootstrapXLg" tabindex="0" />
+    </div>
+    <hr />
+    <div class="modal-content">
+      <ng-container *ngIf="content; else howToPlay">
+        <p>
+          {{content.split('\n')[0]}}
+        </p>
+        <div class='hint' *ngIf="content.split('\n').length > 1">
+          <span>
+            <ng-icon name="bootstrapLightbulbFill" />
+            <h4>Hint</h4>
+          </span>
+          <p>
+            {{content.split('\n')[content.split('\n').length-1]}}
+          </p>
+        </div>
+      </ng-container>
+
+      <ng-template #howToPlay>
+        <p>
+          The goal of the game is to guess the word in as few guesses as possible.
+        </p>
+        <p>
+          You have 6 guesses to find the word.
+        </p>
+        <p>
+          Each guess is made by typing a letter into the keyboard or clicking a key in the keyboard area of the game.
+        </p>
+        <div></div>
+        <p>
+          If the letter is in the word, the square with that letter will turn to yellow.
+        </p>
+        <p>
+          If the letter is in the correct position in the word, the square with the correct letter will turn to green.
+        </p>
+        <p>
+          If the letter is not in the word, the square with that letter will turn into gray.
+        </p>
+        <p>
+          If you guess the word correctly, you win!
+        </p>
+        <p>
+          If you run out of guesses, you lose!
+        </p>
+        <p>
+          Good luck!
+        </p>
+      </ng-template>
+
+    </div>
+    <div class="modal-footer" *ngIf="content">
+      <button (click)="onPlayAgain()">Play Again</button>
+    </div>
+  </div>
+</div>
