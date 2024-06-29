@@ -2,11 +2,15 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   ElementRef,
+  HostListener,
   OnInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { bootstrapXLg } from '@ng-icons/bootstrap-icons';
+import {
+  bootstrapLightbulbFill,
+  bootstrapXLg,
+} from '@ng-icons/bootstrap-icons';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { GameControlsService } from 'src/app/service/game-controls.service';
 import { ModalService } from 'src/app/service/modal.service';
@@ -20,6 +24,7 @@ import confetti from 'canvas-confetti';
   viewProviders: [
     provideIcons({
       bootstrapXLg,
+      bootstrapLightbulbFill,
     }),
   ],
   styleUrl: './modal.component.scss',
@@ -51,7 +56,7 @@ export class ModalComponent implements OnInit {
       this.isVisible = isVisible;
       this.title = this.modalService.title;
       this.content = this.modalService.content;
-      if (this.modalService.content) {
+      if (this.modalService.title === 'Congratulations!') {
         this.celebrate();
       }
     });
@@ -81,5 +86,12 @@ export class ModalComponent implements OnInit {
 
     // Clear confetti after a certain duration
     setTimeout(() => confetti.reset(), duration);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      this.onToggle(false);
+    }
   }
 }

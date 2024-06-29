@@ -4,12 +4,24 @@
   <div #modal class="modal">
     <div class="modal-header">
       <h1>{{title}}</h1>
-      <ng-icon (click)="onToggle()" onkeypress="$event => $event.key === 'Enter' ? onToggle() : null " name="bootstrapXLg" tabindex="0" />
+      <ng-icon (click)="onToggle()" onkeypress="$event => $event.key === 'Enter' ? onToggle() : null "
+        name="bootstrapXLg" tabindex="0" />
     </div>
-    <hr/>
+    <hr />
     <div class="modal-content">
       <ng-container *ngIf="content; else howToPlay">
-        {{content}}
+        <p>
+          {{content.split('\n')[0]}}
+        </p>
+        <div class='hint' *ngIf="content.split('\n').length > 1">
+          <span>
+            <ng-icon name="bootstrapLightbulbFill" />
+            <h4>Hint</h4>
+          </span>
+          <p>
+            {{content.split('\n')[content.split('\n').length-1]}}
+          </p>
+        </div>
       </ng-container>
 
       <ng-template #howToPlay>
@@ -24,10 +36,13 @@
         </p>
         <div></div>
         <p>
-          If the letter is in the word, it will be revealed on the board.
+          If the letter is in the word, the square with that letter will turn to yellow.
         </p>
         <p>
-          If the letter is not in the word, it will be revealed as an X on the board.
+          If the letter is in the correct position in the word, the square with the correct letter will turn to green.
+        </p>
+        <p>
+          If the letter is not in the word, the square with that letter will turn into gray.
         </p>
         <p>
           If you guess the word correctly, you win!

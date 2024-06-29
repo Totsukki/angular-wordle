@@ -26,9 +26,18 @@
       z-index: 10;
     }
     &:hover {
+      & * {
+        transition: transform 500ms;
+      }
       &:first-child {
         ng-icon {
-          rotate: 360deg;
+          transform: rotate(360deg);
+        }
+      }
+      &:nth-child(2) {
+        ng-icon {
+          animation-name: sway;
+          animation-duration: 400ms;
         }
       }
       cursor: pointer;
@@ -36,5 +45,23 @@
       box-shadow: 0 10px 10px 1px rgb(204, 203, 203),
         inset 0 -2px 5px 1px rgb(204, 203, 203);
     }
+  }
+}
+
+@keyframes sway {
+  0% {
+    rotate: 30deg;
+  }
+  25% {
+    rotate: -30deg;
+  }
+  50% {
+    rotate: 30deg;
+  }
+  75% {
+    rotate: -30deg;
+  }
+  100% {
+    rotate: 0deg;
   }
 }

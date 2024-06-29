@@ -19,6 +19,19 @@ export class GameControlsService {
   );
   private renderer: Renderer2;
   tries = [1, 2, 3, 4, 5, 6];
+  // tries = [1];
+  tips = [
+    "Start with a common word: Begin with a five-letter word that uses common letters like 'SLATE', 'CRANE', or 'ADIEU'.",
+    'Use vowels early: Include at least two vowels in your starting word to quickly identify which vowels are in the solution.',
+    'Avoid repeating letters initially: Ensure your first guess has no repeating letters to maximize the number of different letters you test.',
+    'Look for patterns: Pay attention to common letter combinations and word patterns.',
+    'Use process of elimination: If a letter turns gray, avoid using it in future guesses.',
+    'Mix up letter positions: Try moving known letters to different positions to discover the correct placement.',
+    'Think of common prefixes and suffixes: Consider common beginnings and endings of words.',
+    "Don't ignore the clues: Use the yellow (present but wrong position) and green (correct position) letters effectively.",
+    'Keep a list of possible words: Write down potential solutions and eliminate them as you go.',
+    "Practice makes perfect: The more you play, the better you'll get at recognizing patterns and common words.",
+  ];
 
   tryCounter$ = new BehaviorSubject<number>(0);
   currentWord$ = new BehaviorSubject<string>('');
@@ -39,6 +52,18 @@ export class GameControlsService {
   ) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.getNewWord();
+    this.tryCounter$.subscribe((tries) => {
+      if (tries === this.tries.length && !this.hasWon) {
+        this.modalService.setTitle('Better luck next time!');
+        this.modalService.setContent(
+          'Correct word: ' +
+            this.currentWord$.getValue() +
+            '\n' +
+            this.tips[Math.ceil(Math.random() * this.tips.length - 1)]
+        );
+        this.modalService.onToggleModal(true);
+      }
+    });
   }
 
   setTryArea(tryArea$: QueryList<ElementRef>): void {
@@ -51,7 +76,6 @@ export class GameControlsService {
 
   async processKey(key: string): Promise<void> {
     this.splittedWord = this.gameWord$.getValue().split('');
-
     if (key === 'Enter') {
       const hasTries = this.tryCounter$.getValue() < this.tries.length;
       const isFilled =
@@ -61,8 +85,8 @@ export class GameControlsService {
       if (hasTries && isFilled) {
         const isValidWord = await this.checkWord();
         if (this.checkIfWon()) {
-          this.modalService.setContent('You won!');
           this.modalService.setTitle('Congratulations!');
+          this.modalService.setContent('You guessed the word!');
           this.modalService.onToggleModal(true);
           this.hasWon = true;
           return;
@@ -73,12 +97,6 @@ export class GameControlsService {
           this.gameWord$.next('');
           this.splittedWord = [];
         }
-      } else {
-        // if (hasTries) {
-        //   this.checkWord();
-        // } else {
-        //   console.log('asdfhere');
-        // }
       }
     } else {
       this.tryArea$.getValue().forEach((div) => {
