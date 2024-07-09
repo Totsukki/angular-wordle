@@ -37,6 +37,8 @@ export class WordService {
     { letter: 'M', matchingStatus: null },
   ]);
 
+  isWordFourLetter = Math.random() < 0.5;
+
   constructor(private http: HttpClient) {}
 
   getLetterList = () => this.letterList.asObservable();
@@ -53,28 +55,37 @@ export class WordService {
   };
 
   getCurrentWord(): Observable<string[]> {
-    const isWordFourLetter = Math.random() < 0.5;
-
     return this.http
       .get<string[]>(
         `${environment.randomWordGeneratorBaseUrl}/word?number=1&length=${
-          isWordFourLetter ? 4 : 5
+          this.isWordFourLetter ? 4 : 5
         }`
       )
       .pipe(
-        tap(() => {
-          const words$ = this.http.get<string[]>(
-            `${
-              environment.randomWordGeneratorBaseUrl
-            }/word?number=9999&length=${isWordFourLetter ? 4 : 5}`
-          );
-          words$.subscribe((words) => {
-            localStorage.setItem('words', JSON.stringify(words));
-          });
-        }),
         catchError(() => {
-          if (isWordFourLetter) return this.getFourLetterWord();
+          if (this.isWordFourLetter) return this.getFourLetterWord();
           return this.getFiveLetterWord();
+        })
+      );
+  }
+
+  getCurrentWordLengthWordList(): Observable<string[]> {
+    const length = this.isWordFourLetter ? 4 : 5;
+
+    return this.http
+      .get<string[]>(
+        `${environment.randomWordGeneratorBaseUrl}/word?number=9999&length=${length}`
+      )
+      .pipe(
+        catchError(() => {
+          if (length > 4) {
+            return this.http.get<string[]>(
+              `${environment.apiBaseUrl}/fiveLetterWords`
+            );
+          }
+          return this.http.get<string[]>(
+            `${environment.apiBaseUrl}/fourletterWords`
+          );
         })
       );
   }

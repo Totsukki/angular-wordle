@@ -5,7 +5,13 @@ import {
   Renderer2,
   RendererFactory2,
 } from '@angular/core';
-import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  firstValueFrom,
+  map,
+  switchMap,
+} from 'rxjs';
 import { WordService } from './word.service';
 import { Letter } from '../models/letter.model';
 import { ModalService } from './modal.service';
@@ -250,10 +256,18 @@ export class GameControlsService {
 
   getNewWord() {
     this.isFetching$.next(true);
-    this.wordService.getCurrentWord().subscribe((word) => {
-      this.currentWord$.next(word[0].toUpperCase());
-      this.isFetching$.next(false);
-    });
+    this.wordService
+      .getCurrentWord()
+      .pipe(
+        switchMap((word) => {
+          this.currentWord$.next(word[0].toUpperCase());
+          return this.wordService.getCurrentWordLengthWordList();
+        })
+      )
+      .subscribe((words) => {
+        this.isFetching$.next(false);
+        localStorage.setItem('words', JSON.stringify(words));
+      });
   }
   getRemainingTries(): Observable<number> {
     return this.tryCounter$.asObservable();
