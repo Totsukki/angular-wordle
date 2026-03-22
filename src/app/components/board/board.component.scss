@@ -33,13 +33,13 @@ $borderBlack: #000;
   }
 
   .tumble {
-    transition: all 600ms;
+    transition: all 500ms;
     transform: rotateX(180deg);
     border-color: transparent;
     b {
       transform: rotateX(180deg);
       color: white !important;
-      transition: all 600ms;
+      transition: all 500ms;
     }
   }
 
@@ -148,5 +148,13 @@ body:not(.dark-mode) {
         transparent 100%
       );
     }
+  }
+}
+
+@media (max-width: 600px) {
+  .board {
+    scale:.90;
+    align-items: start;
+    margin: 0 0 0 -5rem    
   }
 }

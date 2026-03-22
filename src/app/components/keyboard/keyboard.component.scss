@@ -54,3 +54,22 @@ div {
     background: #787c7f !important;
   }
 }
+
+@media (max-width: 600px) {
+  div {
+    scale: 0.9;
+    gap: 5px;
+    span {
+      min-width: 1.5rem;
+      min-height: 3rem;
+      padding: 8px;
+      font-size: 1.5rem;
+      z-index: 50;
+    }
+    .special-key {
+      min-width: 10vw;
+      gap: 5px;
+      font-size: 0.8rem;
+    }
+  }
+}
