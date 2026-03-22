@@ -2,12 +2,9 @@
     <div class="content">
         <app-game-controls />
         <div class="logo">
-            <h1>W</h1>
-            <h1>o</h1>
-            <h1>r</h1>
-            <h1>d</h1>
-            <h1>l</h1>
-            <h1>e</h1>
+            <ng-container *ngFor="let char of title.split('')">
+                <h1 class="letter">{{ char }}</h1>
+            </ng-container>
             <small>clone!</small>
         </div>
         <app-board />
