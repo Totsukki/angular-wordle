@@ -62,6 +62,7 @@ export class WordService {
         }`
       )
       .pipe(
+        map((words) => words.map((word) => word.toUpperCase())),
         catchError(() => {
           if (this.isWordFourLetter) return this.getFourLetterWord();
           return this.getFiveLetterWord();
@@ -69,7 +70,17 @@ export class WordService {
       );
   }
 
-  getCurrentWordLengthWordList(): Observable<string[]> {
+  /**
+   * Gets Current Word Length Word List
+   * @description This function gets the current word length word list from the API.
+   * If the API fails, it falls back to a local JSON file.
+   * @returns [wordDictionaryArray. hasError]
+   */
+  getCurrentWordLengthWordList(): Observable<{
+    words: string[];
+    hasError: boolean;
+    currentWordLength: number;
+  }> {
     const length = this.isWordFourLetter ? 4 : 5;
 
     return this.http
@@ -77,14 +88,31 @@ export class WordService {
         `${environment.randomWordGeneratorBaseUrl}/word?number=9999&length=${length}`
       )
       .pipe(
+        map(
+          (words) => {
+            const upperCaseWords = words.map((word) => word.toUpperCase());
+            return {
+              words: upperCaseWords,
+              hasError: false,
+              currentWordLength: length,
+            };
+          } // No error, emit words and hasError = false
+        ),
         catchError(() => {
-          if (length > 4) {
-            return this.http.get<string[]>(
-              `${environment.apiBaseUrl}/fiveLetterWords`
-            );
-          }
-          return this.http.get<string[]>(
-            `${environment.apiBaseUrl}/fourletterWords`
+          const fallbackUrl =
+            length > 4
+              ? `${environment.apiBaseUrl}/fiveLetterWords`
+              : `${environment.apiBaseUrl}/fourLetterWords`;
+
+          return this.http.get<string[]>(fallbackUrl).pipe(
+            map((words) => {
+              const upperCaseWords = words.map((word) => word.toUpperCase());
+              return {
+                words: upperCaseWords,
+                hasError: true,
+                currentWordLength: length,
+              };
+            }) // On error, emit fallback words and hasError = true
           );
         })
       );
@@ -93,23 +121,23 @@ export class WordService {
   checkWordIfExists(word: string): Observable<boolean> {
     return of(localStorage.getItem('words')).pipe(
       map((words) => {
-        return words!.includes(word.toLowerCase());
+        if (words) {
+          return words!.includes(word.toUpperCase());
+        }
+        throw new Error('No words in local storage');
       }),
       catchError(() => {
-        if (word.length > 4) {
-          return this.http
-            .get<string[]>(`${environment.apiBaseUrl}/fiveLetterWords`)
-            .pipe(
-              map((words) => words.includes(word)),
-              catchError(() => of(false))
-            );
-        }
-        return this.http
-          .get<string[]>(`${environment.apiBaseUrl}/fourLetterWords`)
-          .pipe(
-            map((words) => words.includes(word)),
-            catchError(() => of(false))
-          );
+        const fallbackUrl =
+          word.length > 4
+            ? `${environment.apiBaseUrl}/fiveLetterWords`
+            : `${environment.apiBaseUrl}/fourLetterWords`;
+
+        return this.http.get<string[]>(fallbackUrl).pipe(
+          map((words) => {
+            return words.includes(word);
+          }),
+          catchError(() => of(false))
+        );
       })
     );
   }
@@ -122,19 +150,23 @@ export class WordService {
   }
   getFourLetterWord(): Observable<string[]> {
     const index = Math.ceil(Math.random() * 2096);
-    return this.http.get<string[]>(
-      `${environment.apiBaseUrl}/fourLetterWords?_start=${index}&_end=${
-        index + 1
-      }`
-    );
+    return this.http
+      .get<string[]>(
+        `${environment.apiBaseUrl}/fourLetterWords?_start=${index}&_end=${
+          index + 1
+        }`
+      )
+      .pipe(map((words) => words.map((word) => word.toUpperCase())));
   }
 
   getFiveLetterWord(): Observable<string[]> {
     const index = Math.ceil(Math.random() * 3562);
-    return this.http.get<string[]>(
-      `${environment.apiBaseUrl}/fiveLetterWords?_start=${index}&_end=${
-        index + 1
-      }`
-    );
+    return this.http
+      .get<string[]>(
+        `${environment.apiBaseUrl}/fiveLetterWords?_start=${index}&_end=${
+          index + 1
+        }`
+      )
+      .pipe(map((words) => words.map((word) => word.toUpperCase())));
   }
 }

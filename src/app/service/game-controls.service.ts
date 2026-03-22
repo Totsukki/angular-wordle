@@ -5,13 +5,7 @@ import {
   Renderer2,
   RendererFactory2,
 } from '@angular/core';
-import {
-  BehaviorSubject,
-  Observable,
-  firstValueFrom,
-  map,
-  switchMap,
-} from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, switchMap } from 'rxjs';
 import { WordService } from './word.service';
 import { Letter } from '../models/letter.model';
 import { ModalService } from './modal.service';
@@ -21,7 +15,7 @@ import { ModalService } from './modal.service';
 })
 export class GameControlsService {
   private tryArea$ = new BehaviorSubject<QueryList<ElementRef>>(
-    new QueryList<ElementRef>()
+    new QueryList<ElementRef>(),
   );
   private renderer: Renderer2;
   tries = [1, 2, 3, 4, 5, 6];
@@ -54,7 +48,7 @@ export class GameControlsService {
   constructor(
     private rendererFactory: RendererFactory2,
     private wordService: WordService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) {
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.getNewWord();
@@ -65,7 +59,7 @@ export class GameControlsService {
           'Correct word: ' +
             this.currentWord$.getValue() +
             '\n' +
-            this.tips[Math.ceil(Math.random() * this.tips.length - 1)]
+            this.tips[Math.ceil(Math.random() * this.tips.length - 1)],
         );
         this.modalService.onToggleModal(true);
       }
@@ -133,7 +127,9 @@ export class GameControlsService {
   private removeLetter = (divElements: NodeList[]) => {
     if (this.gameWord$.getValue().length > 0) {
       this.gameWord$.next(
-        this.gameWord$.getValue().slice(0, this.gameWord$.getValue().length - 1)
+        this.gameWord$
+          .getValue()
+          .slice(0, this.gameWord$.getValue().length - 1),
       );
       const currentDiv = divElements[this.gameWord$.getValue().length];
       this.renderer.setProperty(currentDiv, 'textContent', '');
@@ -152,12 +148,12 @@ export class GameControlsService {
   }
   async checkWord() {
     this.isAnimating = true;
-    const currentWord = this.currentWord$.getValue();
+    const currentWord = this.currentWord$.getValue().toUpperCase();
     const wordValue = this.gameWord$.getValue();
     const tryCounterValue = this.tryCounter$.getValue();
     const tryAreaValue = this.tryArea$.getValue();
     const isWordValid = await firstValueFrom(
-      this.wordService.checkWordIfExists(wordValue)
+      this.wordService.checkWordIfExists(wordValue),
     );
     this.wordCheckStatus = [];
     const currentDiv = tryAreaValue.toArray()[tryCounterValue].nativeElement;
@@ -184,7 +180,7 @@ export class GameControlsService {
 
       return new Promise((resolve, reject) => {
         const div = tryAreaValue.find(
-          (div) => div.nativeElement.id == tryCounterValue + 1
+          (div) => div.nativeElement.id == tryCounterValue + 1,
         );
         if (div) {
           const children = Array.from(currentDiv.children);
@@ -195,11 +191,11 @@ export class GameControlsService {
                 setTimeout(() => {
                   this.renderer.addClass(
                     child,
-                    this.wordCheckStatus[i].matchingStatus || ''
+                    this.wordCheckStatus[i].matchingStatus || '',
                   );
                   childResolve(true);
                 }, 100);
-              }, i * 500);
+              }, i * 450);
             });
           });
           Promise.all(childPromises).then(() => {
@@ -207,7 +203,7 @@ export class GameControlsService {
               this.wordCheckStatus.forEach((wordCheck) => {
                 this.wordService.setLetterExistsInWord(
                   wordCheck.letter,
-                  wordCheck.matchingStatus || ''
+                  wordCheck.matchingStatus || '',
                 );
               });
               this.isAnimating = false;
@@ -262,11 +258,22 @@ export class GameControlsService {
         switchMap((word) => {
           this.currentWord$.next(word[0].toUpperCase());
           return this.wordService.getCurrentWordLengthWordList();
-        })
+        }),
       )
-      .subscribe((words) => {
+      .subscribe((response) => {
+        const { words, hasError, currentWordLength } = response;
         this.isFetching$.next(false);
-        localStorage.setItem('words', JSON.stringify(words));
+
+        const lsWords = localStorage.getItem('words');
+        const parsedWords = lsWords ? JSON.parse(lsWords) : [];
+
+        const isWordLengthExists = parsedWords.some(
+          (storedWord: string) => storedWord.length === currentWordLength,
+        );
+
+        if (!isWordLengthExists || hasError) {
+          localStorage.setItem('words', JSON.stringify(words));
+        }
       });
   }
   getRemainingTries(): Observable<number> {
